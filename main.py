@@ -8,7 +8,7 @@
 # @Software: PyCharm
 # @question:    1.由于本机网络不稳定，故设置了每处理一个某年某月进行写入读出，若网络稳定可修改
 #               2.代码145行对于超过长度限制的行的分割做的不好，期望可以分割为hanLP.parse()能够处理的最大长度
-#               3.代码48行auth处需修改为自己hanLP的API密钥，的代码167行需修改为自己hanLP的每分钟调用次数，199行目前为从“今”到”古“，可修改。
+#               3.代码48行auth处需修改为自己hanLP的API密钥，的代码176行需修改为自己hanLP的每分钟调用次数，208行目前为从“今”到”古“，可修改。
 #               4.其实可以自动读取note.txt中当前待处理的文件夹路径
 #               5.后期由于字典过长导致向字典操作变慢，应考虑多存几个字典，目前看来，为了效率，每1-2年应存为一个字典，可以考虑在所有字典生成完后进行合并
 import os
@@ -37,9 +37,9 @@ def setdir(dirpath):
         os.makedirs(dirpath)
 
 
-def setNewDictFile(dict,filepath):
-    if not os.path.exists(filepath):
-        with open(filepath, "wb") as tf:
+def setNewDictFile(dict, dict_name, folder_path, folders_dict):
+    if dict_name not in folders_dict:
+        with open(folder_path + '/' + dict_name, "wb") as tf:
             pickle.dump(dict, tf)
 
 
@@ -50,7 +50,7 @@ def saveDictFile(dict,filepath):
 
 count1 = 0  # 计数，每分钟最多调用 hanLP API 50次，用于记录当前调用次数
 
-HanLP = HanLPClient('https://www.hanlp.com/api', auth='ATU2NUBiYnMuaGFubHAuY29tOkNhUUhXeW9sVFlCV1BCYmM=', language='zh') # auth不填则匿名，zh中文，mul多语种
+HanLP = HanLPClient('https://www.hanlp.com/api', auth='*******nMuaGFubHAuY29tOkNhUUhXeW9sVFlCV1BCYmM=', language='zh') # auth不填则匿名，zh中文，mul多语种
 
 # ！！！！！由于程序运行周期过长，注意每次运行程序前修改为当前待处理的年月
 current_year = 2003 # 当前年，用于记录当前正在处理文件的发布年份
@@ -68,18 +68,20 @@ name_dict_word2No = 'dict_word2No' + str(current_year) + '.pkl'
 name_dict_No2Paragraph = 'dict_No2Paragraph' + str(current_year) + '.pkl'
 folders_dict_word2No = os.listdir(path_folder_dict_word2No)
 folders_dict_No2Paragraph = os.listdir(path_folder_dict_No2Paragraph)
-
-setNewDictFile(defaultdict(list), path_folder_dict_word2No + '/' + name_dict_word2No)
-# if name_dict_word2No not in folders_dict_word2No:
-#     tmp_dict = defaultdict(list)
-#     with open(path_folder_dict_word2No + '/' + name_dict_word2No, "wb") as tf:
-#         pickle.dump(tmp_dict, tf)
-if name_dict_No2Paragraph not in folders_dict_No2Paragraph:
-    tmp_dict = {}
-    with open(path_folder_dict_No2Paragraph + '/' + name_dict_No2Paragraph, "wb") as tf:
-        pickle.dump(tmp_dict, tf)
 path_file_dict_word2No = path_folder_dict_word2No + '/' + name_dict_word2No
 path_file_dict_No2Paragraph = path_folder_dict_No2Paragraph + '/' + name_dict_No2Paragraph
+setNewDictFile(defaultdict(list), name_dict_word2No, path_folder_dict_word2No, folders_dict_word2No)
+setNewDictFile({}, name_dict_No2Paragraph, path_folder_dict_No2Paragraph, folders_dict_No2Paragraph)
+# if name_dict_word2No not in folders_dict_word2No:
+#     tmp_dict = defaultdict(list)
+#     with open(path_file_dict_word2No, "wb") as tf:
+#         pickle.dump(tmp_dict, tf)
+# if name_dict_No2Paragraph not in folders_dict_No2Paragraph:
+#     tmp_dict = {}
+#     with open(path_file_dict_No2Paragraph, "wb") as tf:
+#         pickle.dump(tmp_dict, tf)
+
+
 
 t3 = 0  # 用于记录处理某年某月文件夹的时间
 
@@ -206,15 +208,14 @@ while current_year < 2004:  # 资料只到2003年
         current_year -= 1   # 年份+1
         current_month = 1   # 月份赋1
         # 字典控制，使每年的记录存在一个字典中
-        tmp_dict = defaultdict(list)
         name_dict_word2No = 'dict_word2No' + str(current_year) + '.pkl'
         name_dict_No2Paragraph = 'dict_No2Paragraph' + str(current_year) + '.pkl'
         path_file_dict_word2No = path_folder_dict_word2No + '/' + name_dict_word2No
         path_file_dict_No2Paragraph = path_folder_dict_No2Paragraph + '/' + name_dict_No2Paragraph
-        saveDictFile(tmp_dict, path_file_dict_word2No)
-
-        tmp_dict = {}
-        saveDictFile(tmp_dict, path_file_dict_No2Paragraph)
+        folders_dict_word2No = os.listdir(path_folder_dict_word2No)
+        folders_dict_No2Paragraph = os.listdir(path_folder_dict_No2Paragraph)
+        setNewDictFile(defaultdict(list), name_dict_word2No, path_folder_dict_word2No, folders_dict_word2No)
+        setNewDictFile({}, name_dict_No2Paragraph, path_folder_dict_No2Paragraph, folders_dict_No2Paragraph)
 
     t2 = time.time()    # 每个年月记录处理的结束时间
     t3 = t2 - t1
