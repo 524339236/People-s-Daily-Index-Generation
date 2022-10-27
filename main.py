@@ -211,10 +211,10 @@ while current_year < 2004:  # 资料只到2003年
         name_dict_No2Paragraph = 'dict_No2Paragraph' + str(current_year) + '.pkl'
         path_file_dict_word2No = path_folder_dict_word2No + '/' + name_dict_word2No
         path_file_dict_No2Paragraph = path_folder_dict_No2Paragraph + '/' + name_dict_No2Paragraph
-        setDictFile(tmp_dict, path_file_dict_word2No)
+        saveDictFile(tmp_dict, path_file_dict_word2No)
 
         tmp_dict = {}
-        setDictFile(tmp_dict, path_file_dict_No2Paragraph)
+        saveDictFile(tmp_dict, path_file_dict_No2Paragraph)
 
     t2 = time.time()    # 每个年月记录处理的结束时间
     t3 = t2 - t1
