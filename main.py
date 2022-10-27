@@ -50,7 +50,7 @@ def saveDictFile(dict,filepath):
 
 count1 = 0  # 计数，每分钟最多调用 hanLP API 50次，用于记录当前调用次数
 
-HanLP = HanLPClient('https://www.hanlp.com/api', auth='MTU2NUBiYnMuaGFubHAuY29tOkNhUUhXeW9sVFlCV1BCYmM=', language='zh') # auth不填则匿名，zh中文，mul多语种
+HanLP = HanLPClient('https://www.hanlp.com/api', auth='ATU2NUBiYnMuaGFubHAuY29tOkNhUUhXeW9sVFlCV1BCYmM=', language='zh') # auth不填则匿名，zh中文，mul多语种
 
 # ！！！！！由于程序运行周期过长，注意每次运行程序前修改为当前待处理的年月
 current_year = 2003 # 当前年，用于记录当前正在处理文件的发布年份
