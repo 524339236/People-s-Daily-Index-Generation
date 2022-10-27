@@ -11,13 +11,13 @@ path_dict = './dict'
 path_dict_word2No = path_dict + '/word2No'
 path_dict_No2Paragraph = path_dict + '/No2Paragraph'
 
-floders_dict_word2No = os.listdir(path_dict_word2No)
-floders_dict_No2Paragraph = os.listdir(path_dict_No2Paragraph)
+folders_dict_word2No = os.listdir(path_dict_word2No)
+folders_dict_No2Paragraph = os.listdir(path_dict_No2Paragraph)
 
-for i in range(len(floders_dict_word2No)-1):
-    file_dict_word2No_path = path_dict_word2No + '/' + floders_dict_word2No[i+1]    # 首个文件有问题，需要重新训练
-    file_dict_No2Paragraph_path = path_dict_No2Paragraph + '/' + floders_dict_No2Paragraph[i+1]
-    # print(floders_dict_word2No[i] + floders_dict_No2Paragraph[i])
+for i in range(len(folders_dict_word2No)):
+    file_dict_word2No_path = path_dict_word2No + '/' + folders_dict_word2No[i]    # （解决）首个文件有问题，需要重新训练
+    file_dict_No2Paragraph_path = path_dict_No2Paragraph + '/' + folders_dict_No2Paragraph[i]
+    print(folders_dict_word2No[i] + folders_dict_No2Paragraph[i])
     with open(file_dict_word2No_path, "rb") as tf:
         dict_word2No = pickle.load(tf)
     with open(file_dict_No2Paragraph_path, "rb") as tf:

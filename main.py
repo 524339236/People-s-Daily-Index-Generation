@@ -7,8 +7,8 @@
 # @File    : handleArt.py
 # @Software: PyCharm
 # @question:    1.由于本机网络不稳定，故设置了每处理一个某年某月进行写入读出，若网络稳定可修改
-#               2.代码152行对于超过长度限制的行的分割做的不好，期望可以分割为hanLP.parse()能够处理的最大长度
-#               3.代码48行auth处需修改为自己hanLP的API密钥，的代码174行需修改为自己hanLP的每分钟调用次数，210行目前为从“今”到”古“，可修改。
+#               2.代码145行对于超过长度限制的行的分割做的不好，期望可以分割为hanLP.parse()能够处理的最大长度
+#               3.代码48行auth处需修改为自己hanLP的API密钥，的代码167行需修改为自己hanLP的每分钟调用次数，199行目前为从“今”到”古“，可修改。
 #               4.其实可以自动读取note.txt中当前待处理的文件夹路径
 #               5.后期由于字典过长导致向字典操作变慢，应考虑多存几个字典，目前看来，为了效率，每1-2年应存为一个字典，可以考虑在所有字典生成完后进行合并
 import os
@@ -37,19 +37,24 @@ def setdir(dirpath):
         os.makedirs(dirpath)
 
 
-def setDictFile(dict,filepath):
+def setNewDictFile(dict,filepath):
     if not os.path.exists(filepath):
         with open(filepath, "wb") as tf:
             pickle.dump(dict, tf)
-            
+
+
+def saveDictFile(dict,filepath):
+    with open(filepath, "wb") as tf:
+        pickle.dump(dict, tf)
+
 
 count1 = 0  # 计数，每分钟最多调用 hanLP API 50次，用于记录当前调用次数
 
-HanLP = HanLPClient('https://www.hanlp.com/api', auth='ATU2NUBiYnMuaGFubHAuY29tOkNhUUhXeW9sVFlCV1BCYmM=', language='zh') # auth不填则匿名，zh中文，mul多语种
+HanLP = HanLPClient('https://www.hanlp.com/api', auth='MTU2NUBiYnMuaGFubHAuY29tOkNhUUhXeW9sVFlCV1BCYmM=', language='zh') # auth不填则匿名，zh中文，mul多语种
 
 # ！！！！！由于程序运行周期过长，注意每次运行程序前修改为当前待处理的年月
 current_year = 2003 # 当前年，用于记录当前正在处理文件的发布年份
-current_month = 5   # 当前月，用于记录当前正在处理文件的发布月份
+current_month = 4   # 当前月，用于记录当前正在处理文件的发布月份
 current_day = 1 # 当前天，用于记录当前正在处理文件的发布天份:D
 
 # 字典控制，使每年的记录存在一个字典中
@@ -64,7 +69,7 @@ name_dict_No2Paragraph = 'dict_No2Paragraph' + str(current_year) + '.pkl'
 folders_dict_word2No = os.listdir(path_folder_dict_word2No)
 folders_dict_No2Paragraph = os.listdir(path_folder_dict_No2Paragraph)
 
-setDictFile(defaultdict(list), path_folder_dict_word2No + '/' + name_dict_word2No)
+setNewDictFile(defaultdict(list), path_folder_dict_word2No + '/' + name_dict_word2No)
 # if name_dict_word2No not in folders_dict_word2No:
 #     tmp_dict = defaultdict(list)
 #     with open(path_folder_dict_word2No + '/' + name_dict_word2No, "wb") as tf:
@@ -109,14 +114,7 @@ while current_year < 2004:  # 资料只到2003年
         num += 1
         if num%100 == 0:
             print(f'{time.time()-t1}当前路径:{dir2_path}, 进度:{num}/{len(folders)}') # 记录程序运行状态
-        '''本想为每个年月创建一个字典，然并卵
-        handled_data_dir_path = './data2/' + str(current_year)
-        handled_data_file_path = handled_data_dir_path + '/' +  str(current_month)
-        if os.path.exists(handled_data_dir_path):
-            pass
-        else:
-            os.makedirs(handled_data_dir_path)
-        '''
+
         file_path = dir2_path + '/' + file  # 待处理文件路径
         f = open(file_path, encoding = 'utf-8') # open待处理文件
         lines = f.readlines()   # lines[0]:题目(### xxx xxx) ///// lines[1]:作者(有时为空, 多作者时形如王泽辰康金泉) ///// lines[2]:时间(year-month-day) ///// lines[3]:版号与分类(第x版(政治·法律·社会)) ///// lines[4]:无意义, 一般为(专栏：) ///// lines[5]:一般为空行 ///// lines[6:]:正文
@@ -138,8 +136,10 @@ while current_year < 2004:  # 资料只到2003年
         for line in body:   # 正文中的每一行
             head = '-'.join([times, edition_No, str(chapter_No).rjust(3, '0'), str(paragraph_No).rjust(3, '0')])   # 编号，'19561101-02-001-001'
             line = line.replace(' ', '')    # 去掉行中的空格
-            dict_No2Paragraph.setdefault(head, line)    # 生成 '编号/段落内容' 字典
-
+            line = line.replace('　', '')
+            line = line.replace('\t', '')
+            if not line.isspace():
+                dict_No2Paragraph.setdefault(head, line)    # 生成 '编号/段落内容' 字典
             #  由于hanLP.parse()处理的字符串内容有限制，在构造待处理list和dict时需要进行处理
             if line.isspace():  # 判断行是否为空，因为hanLP.parse()为空会报错！！！
                 continue
@@ -197,12 +197,8 @@ while current_year < 2004:  # 资料只到2003年
                 dict10.setdefault(i + 1, dict10_overflow[i + 201])  # dict10的key从1开始
             dict10_overflow = {}  # 字典溢出清零
 
-    setDictFile(dict_word2No, path_file_dict_word2No)# 每处理完一个某年某月文件夹后，将字典写入，及时保存
-    setDictFile(dict_No2Paragraph, path_file_dict_No2Paragraph)# 每处理完一个某年某月文件夹后，将字典写入，及时保存
-    # with open(path_file_dict_word2No, "wb") as tf:
-    #     pickle.dump(dict_word2No, tf)
-    # with open(path_file_dict_No2Paragraph, "wb") as tf:
-    #     pickle.dump(dict_No2Paragraph, tf)
+    saveDictFile(dict_word2No, path_file_dict_word2No)# 每处理完一个某年某月文件夹后，将字典写入，及时保存
+    saveDictFile(dict_No2Paragraph, path_file_dict_No2Paragraph)# 每处理完一个某年某月文件夹后，将字典写入，及时保存
 
     if int(current_month) < 12: # 处理完某年某月文件后，如果月份小于12
         current_month += 1  # 月份+1
@@ -217,13 +213,8 @@ while current_year < 2004:  # 资料只到2003年
         path_file_dict_No2Paragraph = path_folder_dict_No2Paragraph + '/' + name_dict_No2Paragraph
         setDictFile(tmp_dict, path_file_dict_word2No)
 
-        # with open(path_file_dict_word2No, "wb") as tf:
-        #     pickle.dump(tmp_dict, tf)
         tmp_dict = {}
         setDictFile(tmp_dict, path_file_dict_No2Paragraph)
-        # with open(path_file_dict_No2Paragraph, "wb") as tf:
-        #     pickle.dump(tmp_dict, tf)
-
 
     t2 = time.time()    # 每个年月记录处理的结束时间
     t3 = t2 - t1
